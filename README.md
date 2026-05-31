@@ -1,15 +1,6 @@
 # DEMO_LAN
 
-## 3.1 Настройка деномической трансляции адресов 
-### на isp:
-nano /etc/nftables/isp.nft
+## 3.1 Настройка деномической трансляции адресо
+## На ISP
+``` cat /DEMO_LAN/isp.nft >> /etc/nftables/isp.nfs ```
 
-### прописываем: 
-```
-table inet nat {
-        chain POSTROUTING {
-        type nat hook postrouting priority srcnat;
-        oifname "enp0s3" masquerade
-        }
-}
-```
