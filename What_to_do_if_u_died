@@ -1,1 +1,11 @@
-
+#RAID сломался
+#заходим с паролем
+sudo mdadm --stop /dev/md0
+sudo mdadm --remove /dev/md0
+sudo mdadm --zero-superblock /dev/sdb
+sudo mdadm --zero-superblock /dev/sdc
+nano /etc/fstab
+#удалить содержимое
+/etc/mdadm.conf
+#удалить содержимое
+#перезагрузить
