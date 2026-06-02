@@ -1,4 +1,6 @@
-#RAID сломался
+#Что делать если у Вас:
+
+#сломался RAID
 #заходим с паролем
 sudo mdadm --stop /dev/md0
 sudo mdadm --remove /dev/md0
