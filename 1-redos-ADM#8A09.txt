@@ -1,0 +1,219 @@
+#1
+#FQDN-REDOS
+hostnamectl hostname isp.sirius-exam.org
+exec bash
+#FQDN-Eltex
+hostname hq-rtr.sirius-exam.org
+
+#2
+#/30 4 адреса
+#/29 8 адресов (10.10.10.1-10.10.10.6)
+#/28 16 адресов (172.16.1.1-172.16.1.14)
+#/27 32 адреса (192.168.100.1-192.168.100.30)
+#HQ-RTR статический маршрут
+ip route 0.0.0.0/0 172.16.1.1
+#BR-RTR статический маршрут
+ip route 0.0.0.0/0 172.16.2.1
+#HQ-SRV статический маршрут
+ip route add default via 192.168.100.1
+#HQ-CLI статический маршрут
+ip route add default via 192.168.200.1
+#BR-SRV статический маршрут
+ip route add default via 192.168.30.1
+#Проверка
+ip route show
+
+#3
+#NAT ISP
+nano /etc/nftables/isp.nft
+#прописать в файл
+table inet nat {
+        chain POSTROUTING {
+        type nat hook postrouting priority srcnat;
+        oifname "enp0s3" masquerade
+        }
+}
+#
+nano /etc/sysconfig/nftables.conf
+#прописать в файл
+include "/etc/nftables/isp.nft"
+#
+systemctl enable --now nftables
+#
+nano /etc/systl.d/99-sysctl.conf
+#прописать в файл
+net.ipv4.ip_forward=1
+#
+sysctl -p
+#проверка
+# do show interfaces status
+# do show configuration changes
+# do show runnels status 
+# do show ip ospf neighbors 
+# do show user
+
+#sshuser
+#На HQ-SRV и BR-SRV:
+useradd sshuser -u 2026
+passwd sshuser 
+P@ssword
+usermod -a -G wheel sshuser
+visudo
+#прописать в файл: добавить в файл после same thing without a password
+sshuser	ALL=(ALL)		NOPASSWD: ALL
+#нажать ESC, потом нажать на двоеточие, написать wq
+
+#net_admin
+#На HQ-RTR и BR-RTR
+user net_admin
+password P@ssw0rd
+privilege 15 
+
+#5: удалённый доступ, SSH
+#НА HQ-SRV И BR-SRV:
+nano /etc/ssh/sshd_config 
+#прописать, расскомментировать. 
+#AllowUsers строчки нет, добавить нужно
+Port 2026
+MaxAuthTries 2
+PasswordAuthentication yes 
+AllowUsers	sshuser (ЗДЕСЬ ТАБ, А НЕ ПРОБЕЛ)
+Banner /etc/ssh/banner
+PermitRootLogin no
+#
+nano /etc/ssh/banner
+#прописать в файл
+----------------------
+Authorized access only
+----------------------
+#
+systemctl restart sshd
+# ПРОВЕРКА:
+# можно локально подключаться, можно с HQ-SRV на BR-SRV и наоборот
+# ssh 192.168.100.2 (должна быть ошибка: connection refused)
+# ssh -p 2026 192.168.100.2 (должен запросить пароль, но после ввода выдать ошибку + должен высветиться баннер)
+# ssh -p 2026 sshuser@192.168.100.2 (должен войти + должен высветиться баннер)
+
+#GRE-туннель
+#На HQ-RTR
+tunnel gre 1
+  description "to-br-rtr"
+  ttl 16
+  ip firewall disable
+  local address 172.16.1.2
+  remote address 172.16.2.2
+  ip address 10.10.10.1/30
+  enable
+
+#На BR-RTR
+tunnel gre 1
+  description "to-hq-rtr"	
+  ttl 16
+  ip firewall disable
+  local address 172.16.2.2
+  remote address 172.16.1.2
+  ip address 10.10.10.2/30
+  enable
+
+#Проверка: 
+#do show runnels status 
+#do ping 10.10.10.1(2)
+
+#7
+#OSPF
+#НA HQ-RTR:
+router ospf 1
+  area 0.0.0.0
+    network 192.168.100.0/27
+    network 192.168.200.0/28
+    network 172.16.1.0/29
+    enable
+  exit
+  enable
+exit
+#
+tunnel gre 1
+  ip ospf instance 1
+  ip ospf
+#
+#НА BR-RTR:
+router ospf 1
+  area 0.0.0.0
+    network 192.168.30.0/28
+    network 172.16.2.0/29
+    enable
+  exit
+  enable
+exit
+
+tunnel gre 1
+  ip ospf instance 1
+  ip ospf
+# ПРОВЕРКА
+# do show ip ospf neighbors 
+# ping до конечных устройств
+#
+#Аутентификация OSPF. Идентична на обоих
+key-chain auth_ospf
+  key 1
+    key-string ascii-text 12345678
+    exit
+  exit
+#
+tunnel gre 1
+  ip ospf authentification key-chain auth_ospf
+  ip ospf authentification algoritm md5
+#
+# ПРОВЕРКА
+# do show ip ospf neighbors 
+# ping до конечных устройств
+
+#NAT
+#На HQ-RTR:
+object-group network LOCAL_NET
+  ip address-range 192.168.100.1-192.168.100.30
+exit
+nat source
+  pool WAN_POOL
+    ip address-range 172.16.1.2
+  exit
+ruleset SNAT
+  to interface gi1/0/1 (int to ISP)
+  rule 1
+    match source-address object-group LOCAL_NET
+    action source-nat pool WAN_POOL
+    enable
+  exit
+
+#На BR-RTR:
+object-group network LOCAL_NET
+  ip address-range 192.168.30.1-192.168.100.14
+exit
+nat source
+  pool WAN_POOL
+    ip address-range 172.16.2.2
+  exit
+  ruleset SNAT
+  to interface gi1/0/1 (int to ISP)
+  rule 1
+    match source-address object-group LOCAL_NET
+    action source-nat pool WAN_POOL
+    enable
+exit
+# ПРОВЕРКА
+# do show ip nat translation
+# пинг с BR-SRV на HQ-SRV/CLI
+
+#8
+#DHCP
+#HQ-RTR
+ip dhcp-server
+ip dhcp-server pool CLI_POOL
+network 192.168.200.0/28
+address-range 192.168.200.3-192.168.200.14
+default-router 192.168.200.1
+dns-server 192.168.100.2
+domain-name sirius-exam.org
+#Проверка: включить автоматическую раздачу IP на HQ-CLI
+
+#
