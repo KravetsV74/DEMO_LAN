@@ -4,6 +4,10 @@ hostnamectl hostname isp.sirius-exam.org
 exec bash
 #FQDN-Eltex
 hostname hq-rtr.sirius-exam.org
+#на всех вырубить SElinux
+nano /etc/selinux/config
+#прописать
+SELINUX=disabled
 
 #2
 #/30 4 адреса
