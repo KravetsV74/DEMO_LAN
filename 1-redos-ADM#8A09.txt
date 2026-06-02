@@ -29,6 +29,9 @@ ip route show
 
 #3
 #NAT ISP
+#тут есть файл isp.nfs с конфигом. берем его
+cat /DEMO_LAN/isp.nft >> /etc/nftables/isp.nft
+#ИЛИ
 nano /etc/nftables/isp.nft
 #прописать в файл
 table inet nat {
