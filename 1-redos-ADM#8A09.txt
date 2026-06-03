@@ -228,7 +228,6 @@ domain-name sirius-exam.org
 #НА ВСЕХ
 sudo dnf install bind
 systemctl enable named –now
-systemctl status named
 #
 #НА HQ-SRV
 nano /etc/named.conf
@@ -333,7 +332,17 @@ nano /etc/systemd/resolved.conf
 DNS=192.168.100.2
 #
 systemctl restart systemd-resolved.service
+#
+nano /etc/resolv.conf
+#изменить в файле
+search sirius-exam.org
+nameserver 192.168.100.2
+#
+#
 #НА ВСЕХ ОСТАЛЬНЫХ
+sudo dnf install bind
+systemctl enable named –now
+#
 nano /etc/resolv.conf
 #изменить в файле
 search sirius-exam.org
