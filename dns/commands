@@ -1,0 +1,9 @@
+#на всех
+sudo dnf install bind
+systemctl enable named –now
+systemctl status named
+
+#НА HQ-SRV
+nano /etc/named.conf
+#изменить параметры, прописаны в /dns/named.conf
+  
