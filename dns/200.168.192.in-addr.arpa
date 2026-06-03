@@ -8,4 +8,4 @@ $TTL 3600       ;
       )
 @     IN      NS 192.168.100.2
 1    IN      PTR hq-rtr.sirius-exam.org.
-2    IN      PTR hq-cli.sirius-exam.org.
+3    IN      PTR hq-cli.sirius-exam.org.
