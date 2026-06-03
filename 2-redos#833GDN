@@ -300,4 +300,51 @@ sudo dnf install -y yandex-browser-stable
 
 rpm -qa | grep -i yandex
 
+№1
+#Samba
+#На BR-SRV
+# Установить и подготовить Samba
+hostnamectl hostname br-srv.sirius-exam.org
+groupadd hq
+mkdir -p /srv/samba/hq
+chown root:hq /srv/samba/hq
+chmod 2770 /srv/samba/hq
+# Создать пользователей Linux и Samba
+for n in 1 2 3 4 5; do
+  useradd -m -G hq hquser$n
+  echo "P@ssw0rd" | passwd --stdin hquser$n
+  (echo "P@ssw0rd"; echo "P@ssw0rd") | smbpasswd -a -s hquser$n
+done
 
+getent group hq
+pdbedit -L
+nano /etc/samba/smb.conf
+
+[global]
+   workgroup = WORKGROUP
+   security = user
+   map to guest = never
+
+[hq]
+   path = /srv/samba/hq
+   browseable = yes
+   read only = no
+   valid users = @hq
+   force group = hq
+   create mask = 0660
+   directory mask = 2770
+#Запуск и проверка Samba
+testparm
+systemctl enable --now smb
+systemctl restart smb
+smbclient -L //127.0.0.1 -U hquser1
+# На HQ-CLI
+# Проверить аутентификацию с HQ-CLI
+dnf install -y samba-client
+smbclient //192.168.30.2/hq -U hquser1
+
+# Внутри smbclient:
+ls
+put /etc/hosts hosts-test.txt
+ls
+exit
