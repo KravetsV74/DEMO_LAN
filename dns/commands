@@ -7,3 +7,26 @@ systemctl status named
 nano /etc/named.conf
 #изменить параметры, прописаны в /dns/named.conf
   
+#создать директорию /var/named/master
+#копировать все файлы с зонами
+#выполнить:
+sudo chown -R root:named /var/named/30.168.192.in-addr.arpa /var/named/200.168.192.in-addr.arpa /var/named/100.168.192.in-addr.arpa /var/named/sirius-exam.org 
+sudo chmod 0640 /var/named/master/*
+systemctl restart named
+#
+nano /etc/systemd/resolved.conf
+#раскомментировать и заполнить “DNS=”
+DNS=192.168.100.2
+#
+systemctl restart systemd-resolved.service
+#НА ВСЕХ ОСТАЛЬНЫХ
+nano /etc/resolv.conf
+#изменить в файле
+search sirius-exam.org
+nameserver 192.168.100.2
+
+#ПРОВЕРКА:
+#named-checkconf
+#named-checkzone sirius-exam.org /var/named/master/sirius-exam.org
+#nslookup br-srv.sirius-exam.org
+#nslookup -type=PTR 192.168.30.2
