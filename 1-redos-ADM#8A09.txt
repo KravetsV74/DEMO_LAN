@@ -269,7 +269,7 @@ sirius-exam.org.    IN      SOA     hq-srv.sirius-exam.org. root.sirius-exam.org
                 1w ; Expire
                 360 ; Minimum TTL
                 )
-        IN      NS hq-srv.sirius-exam.org
+        IN      NS hq-srv.sirius-exam.org.
 hq-srv   IN      A 192.168.100.2
 hq-cli    IN      A 192.168.200.2
 br-srv    IN      A 192.168.30.2
@@ -290,7 +290,7 @@ $TTL 3600       ;
       3600000         ; Expire
       3600            ; Minimum
       )
-@     IN      NS 192.168.100.2
+@     IN      NS 192.168.100.2.
 1    IN      PTR hq-rtr.sirius-exam.org.
 2    IN      PTR hq-srv.sirius-exam.org.
 #
@@ -305,7 +305,7 @@ $TTL 3600       ;
       3600000         ; Expire
       3600            ; Minimum
       )
-@     IN      NS 192.168.100.2
+@     IN      NS 192.168.100.2.
 1    IN      PTR hq-rtr.sirius-exam.org.
 2    IN      PTR hq-cli.sirius-exam.org.
 #
@@ -320,10 +320,10 @@ $TTL 3600       ;
       3600000         ; Expire
       3600            ; Minimum
       )
-@     IN      NS 192.168.30.2
+@     IN      NS 192.168.30.2.
 2    IN      PTR br-srv.sirius-exam.org.
 #
-sudo chown -R root:named /var/named/30.168.192.in-addr.arpa /var/named/200.168.192.in-addr.arpa /var/named/100.168.192.in-addr.arpa /var/named/sirius-exam.org 
+sudo chown -R root:named /var/named/master/30.168.192.in-addr.arpa /var/named/master/200.168.192.in-addr.arpa /var/named/master/100.168.192.in-addr.arpa /var/named/master/sirius-exam.org 
 #
 sudo chmod 0640 /var/named/master/*
 systemctl restart named
