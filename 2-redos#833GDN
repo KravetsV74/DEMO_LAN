@@ -1,7 +1,6 @@
 
 
-#2
-#RAID На HQ-SRV
+#2-----RAID На HQ-SRV-----
 
 lsblk
 #находим диски по 1ГБ
@@ -18,8 +17,7 @@ sudo mount /dev/md0 /raid
 echo '/dev/md0  /raid  ext4  defaults  0  0' | sudo tee -a /etc/fstab
 mdadm --detail --scan --verbose >> /etc/mdadm.conf
 
-#3
-#NFS на HQ-SRV
+#3-----NFS на HQ-SRV-----
 dnf install nfs4-acl-tools nfs-utils -y
 mkdir /raid/nfs
 chmod -R 777 /raid/nfs
@@ -47,8 +45,7 @@ df -h
 #ls /raid/nfs
 #должен появиться test.txt
 
-#4
-#CHRONY
+#4-----CHRONY-----
 #На ISP
 nano /etc/chrony.conf
 #закомментировать все строки, кроме первой. должно быть так:
@@ -76,8 +73,7 @@ systemctl restart chronyd
 #На клиентах:
 #chronyc clients
 
-#5
-#ВЕБ-ПРИЛОЖЕНИЕ В DOCKER (additional.iso)
+#5-----ВЕБ-ПРИЛОЖЕНИЕ В DOCKER (additional.iso)-----
 #BR-SRV
 mkdir /bla
 mount /dev/sr1 /bla
@@ -102,8 +98,7 @@ docker exec -it db mysql -u root -p
 docker-compose -f web.yaml stop -d
 docker-compose -f web.yaml up -d
 
-#6
-#ВЕБ-ПРИЛОЖЕНИЕ APACHE (additional.iso)
+#6-----ВЕБ-ПРИЛОЖЕНИЕ APACHE (additional.iso)-----
 #HQ-SRV
 mkdir /bla
 mount /dev/sr1 /bla
@@ -142,8 +137,7 @@ systemctl restart httpd
 #Должен открыться сайт, можно создать пользователя
 
 
-#7
-#Destination NAT
+#7-----Destination NAT-----
 #НА HQ-RTR
 configure
 nat destination
@@ -223,8 +217,7 @@ show ip nat destination rulesets
 #ssh -p 2026 sshuser@172.16.2.2
 
 #
-#8
-#Nginx обратный прокси
+#8-----Nginx обратный прокси-----
 #НА ISP
 dnf install -y nginx httpd-tools
 nano /etc/nginx/conf.d/exam.conf
@@ -269,8 +262,7 @@ curl -H 'Host: web.sirius-exam.org' http://127.0.0.1
 curl -H 'Host: docker.sirius-exam.org' http://127.0.0.1
 #
 #
-#9
-#ВЕБ_АУТЕНТИФИКАЦИЯ
+#9-----ВЕБ_АУТЕНТИФИКАЦИЯ-----
 #НА ISP
 htpasswd -c /etc/nginx/.htpasswd WEB
 # Дважды ввести: P@ssw0rd
@@ -289,8 +281,7 @@ curl -I -H 'Host: web.sirius-exam.org' http://127.0.0.1
 #должно вывести html-код страницы
 curl -u WEB:P@ssw0rd -H 'Host: web.sirius-exam.org' http://127.0.0.1
 #
-#10
-#Яндекс браузер
+#10-----Яндекс браузер-----
 #НА HQ-CLI
 sudo dnf install -y yandex-browser-stable
 
@@ -300,8 +291,7 @@ sudo dnf install -y yandex-browser-stable
 
 rpm -qa | grep -i yandex
 
-№1
-#Samba
+#1-----Samba-----
 #На BR-SRV
 # Установить и подготовить Samba
 hostnamectl hostname br-srv.sirius-exam.org
