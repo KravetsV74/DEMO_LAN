@@ -222,5 +222,51 @@ show ip nat destination rulesets
 #ssh -p 2026 sshuser@172.16.1.2
 #ssh -p 2026 sshuser@172.16.2.2
 
+#
+#8
+#Nginx обратный прокси
+#НА ISP
+dnf install -y nginx httpd-tools
+nano /etc/nginx/conf.d/exam.conf
+#прописать в файл или скопировать из /exam.conf
+server {
+    listen 80;
+    server_name web.sirius-exam.org;
+
+    location / {
+        proxy_pass http://172.16.1.2:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+
+server {
+    listen 80;
+    server_name docker.sirius-exam.org;
+
+    location / {
+        proxy_pass http://172.16.2.2:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+#
+nginx -t
+systemctl enable --now nginx
+systemctl restart nginx
+#На HQ-SRV
+#ПРОВЕРИТЬ, ЧТО В /var/named/master/sirius-exam.org есть строки
+web    IN    CNAME    isp.sirius-exam.org
+docker    IN    CNAME    isp.sirius-exam.org
+
+#ПРОВЕРКА
+#НА ISP. В выводе должно быть много букв (html-страница поднятых сайтов)
+curl -H 'Host: web.sirius-exam.org' http://127.0.0.1
+curl -H 'Host: docker.sirius-exam.org' http://127.0.0.1
+#
+#
+#9
 
 
