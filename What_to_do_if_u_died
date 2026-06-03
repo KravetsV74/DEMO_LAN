@@ -1,4 +1,9 @@
 #Что делать если у Вас:
+#
+#Сделать архив и перекинуть файлы 
+#tar -cf archive-name.tar *
+# scp archive-name.tar root@192.168.100.2:/
+#tar -xvf archive-name.tar
 
 #сломался RAID
 #заходим с паролем
