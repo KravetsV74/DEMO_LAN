@@ -3,7 +3,7 @@ dnf install docker-ce docker-ce-cli docker-compose -y
 systemctl enable docker --now
 systemctl status docker
 mkdir /opt/nextcloud
-cat /redos/docker-compose.yml /opt/nextcloud/docker-compose.yml
+cat /redos/docker-compose.yml > /opt/nextcloud/docker-compose.yml
 docker-compose -f docker-compose.yml up -d
 
 # 1.2 --- Сертификаты ---- 
@@ -18,7 +18,7 @@ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 # 1.3 --- Конфиг nginx ----
 sudo mkdir -p /etc/nginx/sites-available
 sudo nano /etc/nginx/sites-available/nextcloud
-cat /redos/nextcloud /etc/nginx/sites-available/nextcloud
+cat /redos/nextcloud > /etc/nginx/sites-available/nextcloud
 
 #1.4 --- Символическая ссылка ----
 sudo mkdir -p /etc/nginx/sites-enabled
